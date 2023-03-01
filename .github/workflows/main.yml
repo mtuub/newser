@@ -1,0 +1,24 @@
+name: Create discord news
+
+on:
+  push:
+    branches: master
+  schedule:
+    - cron: "0 */1 * * *" # every 1 hours
+env:
+  DISCORD_WEBHOOK_URL: ${{secrets.DISCORD_WEBHOOK_URL}}
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm install
+      - run: node main.js
+      - run: |-
+          git config user.name "Automated"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          timestamp=$(date -u)
+          git commit -m "Latest data: ${timestamp}" || exit 0
+          git push
