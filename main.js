@@ -61,7 +61,7 @@ async function getFacebookPagePosts(page_id, no_of_posts) {
           .replace(/\"/g, "");
         continue;
       } catch (error) {
-        return posts;
+        return posts.sort((a, b) => b.reaction_count - a.reaction_count);
       }
     }
 
