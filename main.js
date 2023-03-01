@@ -1,6 +1,7 @@
 const axios = require("axios");
 const qs = require("qs");
 const fs = require("fs/promises");
+require("dotenv").config();
 
 async function getFacebookPagePosts(page_id, no_of_posts) {
   let cursor = null;
@@ -64,6 +65,10 @@ async function getFacebookPagePosts(page_id, no_of_posts) {
     try {
       // not all posts have external url and image url
       const post = {
+        post_title:
+          response.data.data.node.timeline_feed_units.edges[0].node
+            .comet_sections.content.story.attachments[0].styles.attachment
+            .title_with_entities.text,
         post_url:
           response.data.data.node.timeline_feed_units.edges[0].node
             .comet_sections.content.story.comet_sections.context_layout.story
@@ -108,19 +113,55 @@ async function getFacebookPagePosts(page_id, no_of_posts) {
     } catch (error) {}
   }
 
-  return posts.sort((a, b) => b.timestamp - a.timestamp);
+  return posts.sort((a, b) => b.reaction_count - a.reaction_count);
+}
+
+async function postToDiscord(post) {
+  const webhookURL = process.env.DISCORD_WEBHOOK_URL;
+
+  const date = new Date(post.timestamp * 1000);
+  const formattedDate = date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  const message = {
+    embeds: [
+      {
+        title: post.post_title,
+        description: post.post_text,
+        thumbnail: {
+          url: post.image_url,
+        },
+        url: post.external_url,
+        author: {
+          name: `🗓️ ${formattedDate}     😃 ${post.reaction_count}     💬 ${post.comment_count}`,
+        },
+      },
+    ],
+  };
+
+  await axios.post(webhookURL, message);
 }
 
 (async () => {
-  const posts = await getFacebookPagePosts(108299339233098, 15);
+  const posts = await getFacebookPagePosts(108299339233098, 10);
 
   const existingPosts = JSON.parse(await fs.readFile("posts.json", "utf-8"));
   const newPosts = posts.filter(
     (p) => !existingPosts.some((e) => e.post_url === p.post_url)
   );
-  await fs.writeFile(
-    "posts.json",
-    JSON.stringify([...existingPosts, ...newPosts])
-  );
-  console.log(`Scraped: ${posts.length}, New: ${newPosts.length}`);
+
+  if (newPosts.length > 0) {
+    await fs.writeFile(
+      "posts.json",
+      JSON.stringify([...existingPosts, ...newPosts])
+    );
+    console.log(`Scraped: ${posts.length}, New: ${newPosts.length}`);
+
+    for (let idx = 0; idx < newPosts.length; idx++) {
+      await postToDiscord(newPosts[idx]);
+    }
+  }
 })();
