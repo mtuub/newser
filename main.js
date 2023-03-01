@@ -22,7 +22,7 @@ async function getFacebookPagePosts(page_id, no_of_posts) {
     "sec-ch-ua":
       '"Chromium";v="110", "Not A(Brand";v="24", "Google Chrome";v="110"',
     "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": '"Windows"',
+    // "sec-ch-ua-platform": '"Windows"',
     "sec-fetch-dest": "empty",
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin",
@@ -161,7 +161,7 @@ async function postToDiscord(post) {
     console.log(`Scraped: ${posts.length}, New: ${newPosts.length}`);
 
     for (let idx = 0; idx < newPosts.length; idx++) {
-      await postToDiscord(newPosts[idx]);
+      // await postToDiscord(newPosts[idx]);
     }
   }
 })();
