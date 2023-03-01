@@ -164,7 +164,7 @@ async function postToDiscord(post) {
     console.log(`Scraped: ${posts.length}, New: ${newPosts.length}`);
 
     for (let idx = 0; idx < newPosts.length; idx++) {
-      // await postToDiscord(newPosts[idx]);
+      await postToDiscord(newPosts[idx]);
     }
   }
 })();
