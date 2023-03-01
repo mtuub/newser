@@ -54,12 +54,15 @@ async function getFacebookPagePosts(page_id, no_of_posts) {
     } catch (error) {
       // video posts (invalid)
       const regex = /"end_cursor":"([^"]+)"/g;
-
-      cursor = `${response.data}`
-        .match(regex)[0]
-        .split(":")[1]
-        .replace(/\"/g, "");
-      continue;
+      try {
+        cursor = `${response.data}`
+          .match(regex)[0]
+          .split(":")[1]
+          .replace(/\"/g, "");
+        continue;
+      } catch (error) {
+        return posts;
+      }
     }
 
     try {
