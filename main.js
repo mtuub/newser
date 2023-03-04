@@ -153,7 +153,10 @@ async function postToDiscord(post) {
 
   const existingPosts = JSON.parse(await fs.readFile("posts.json", "utf-8"));
   const newPosts = posts.filter(
-    (p) => !existingPosts.some((e) => e.post_url === p.post_url)
+    (p) =>
+      !existingPosts.some(
+        (e) => e.external_url === p.external_url && p.reaction_count > 100
+      )
   );
 
   if (newPosts.length > 0) {
